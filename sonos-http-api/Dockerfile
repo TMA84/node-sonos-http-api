@@ -17,24 +17,18 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Copy package files and local dependency
 COPY package*.json ./
 COPY packages/ packages/
 
-# Install production dependencies only
 RUN npm ci --omit=dev
 
-# Copy application source
 COPY server.js settings.js ./
 COPY lib/ lib/
-
-# Copy static assets (modernized web UI)
 COPY static/ static/
 
-# Create writable directories
 RUN mkdir -p cache presets static/clips static/tts
 
-COPY sonos-http-api/run.sh /
+COPY run.sh /
 RUN chmod a+x /run.sh
 
 EXPOSE 5005

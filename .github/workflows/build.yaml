@@ -102,6 +102,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Copy source into addon context
+        run: |
+          cp package*.json sonos-http-api/
+          cp server.js settings.js sonos-http-api/
+          cp -r packages sonos-http-api/
+          cp -r lib sonos-http-api/
+          cp -r static sonos-http-api/
+
       - name: Build image
         uses: home-assistant/builder/actions/build-image@2026.03.2
         with:
