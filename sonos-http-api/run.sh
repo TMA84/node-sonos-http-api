@@ -1,11 +1,9 @@
 #!/usr/bin/with-contenv bashio
-# shellcheck shell=bash
 
 # Read options from Home Assistant add-on config
 PORT=$(bashio::config 'port')
 ANNOUNCE_VOLUME=$(bashio::config 'announce_volume')
 
-# Create settings.json from add-on options
 CONFIG_DIR="/config"
 SETTINGS_FILE="/app/settings.json"
 
