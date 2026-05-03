@@ -22,3 +22,13 @@ obj/
 .DS_Store
 yarn.lock
 npm-debug.log
+
+# TypeScript build output
+dist/
+
+# Environment files
+.env
+.env.*
+
+# Test coverage
+coverage/

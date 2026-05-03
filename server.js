@@ -1,21 +1,26 @@
-'use strict';
-const http = require('http');
-const https = require('https');
-const fs = require('fs');
-const auth = require('basic-auth');
+import http from 'node:http';
+import https from 'node:https';
+import fs from 'node:fs';
+import { createRequire } from 'node:module';
+import auth from 'basic-auth';
+import serveStatic from 'serve-static';
+import settings from './settings.js';
+import HttpAPI from './lib/sonos-http-api.js';
+
+const require = createRequire(import.meta.url);
 const SonosSystem = require('sonos-discovery');
 const logger = require('sonos-discovery/lib/helpers/logger');
-const SonosHttpAPI = require('./lib/sonos-http-api.js');
-const serveStatic = require('serve-static');
-const settings = require('./settings');
 
-const serve = new serveStatic(settings.webroot);
+const serve = serveStatic(settings.webroot);
 const discovery = new SonosSystem(settings);
-const api = new SonosHttpAPI(discovery, settings);
+const api = new HttpAPI(discovery, settings);
+
+await api.init();
 
 var requestHandler = function (req, res) {
   req.addListener('end', function () {
     serve(req, res, function (err) {
+      if (res.headersSent) return;
 
       // If error, route it.
       // This bypasses authentication on static files!
@@ -65,7 +70,7 @@ if (settings.https) {
     options.cert = fs.readFileSync(settings.https.cert);
   } else {
     logger.error("Insufficient configuration for https");
-    return;
+    process.exit(1);
   }
 
   const secureServer = https.createServer(options, requestHandler);
@@ -96,5 +101,3 @@ server.on('error', (err) => {
 
   process.exit(1);
 });
-
-

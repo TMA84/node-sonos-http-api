@@ -1,123 +1,86 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Sonos API</title>
-    <style media="screen">
-      body { color: #333333; font-family: 'Helvetica Neue', Helvetica, 'Segoe UI', Arial, freesans, sans-serif; margin-top: 25px;}
-      h1 { text-align: center; }
-      a { color: #333333; text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      .logo { display: block; margin: auto }
-      .content { margin: 20px 25%; }
-      .docs { background-color: #f4f4f4; border-radius: 4px; padding: 10px; margin-bottom: 20px;}
-      .docs p, .docs li { padding: 0; margin: 0; line-height: 28px; font-size: 14px; font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace; }
-      .docs .method { background-color: #dbdbdb; padding: 4px; border-radius: 2px; margin-right: 4px;}
-      .docs h2 { margin-bottom: 8px;}
-      .docs h2:first-child { margin-top: 0;}
-      .docs h4 { margin-left: 10px; }
-      .docs ul { list-style-type: none; padding-left: 20px; }
-      .docs .explanation { margin-left: 20px; font-family: 'Helvetica Neue', Helvetica, 'Segoe UI', Arial, freesans, sans-serif; font-size: 14px; }
-      .docs .experimental { background-color: red; border-radius: 3px; color: white; font-size: 10px; line-height: 12px; padding: 2px 6px; font-weight: bold; }
-      .footer { text-align: center; font-size: 12px; margin: 10px 0 50px 0;}
-    </style>
-  </head>
-  <body>
-    <img class="logo" src="/sonos-icon.png" alt="Sonos" width="256px" />
-    <div class="content">
-      <h1>Sonos API</h1>
-
-      <div class="docs">
-        <h2>Info</h2>
-        <p><span class="method">GET</span> <a href="/zones">/zones</a></p>
-        <p><span class="method">GET</span> <a href="/favorites">/favorites</a></p>
-        <p><span class="method">GET</span> <a href="/playlists">/playlists</a></p>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sonos HTTP API</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header class="page-header" role="banner">
+    <div class="container cluster">
+      <div class="cluster">
+        <img src="/sonos-icon.png" alt="Sonos logo" width="64" height="64">
+        <h1>Sonos HTTP API</h1>
       </div>
-
-      <div class="docs">
-        <h2>Global Control</h2>
-        <p><span class="method">GET</span> /lockvolumes</p>
-        <p><span class="method">GET</span> /unlockvolumes</p>
-        <p><span class="method">GET</span> /pauseall/{timeout in minutes (optional)}</p>
-        <p><span class="method">GET</span> /resumeall/{timeout in minutes (optional)}</p>
-        <p><span class="method">GET</span> /reindex</p>
-        <p><span class="method">GET</span> /sleep/{timeout in seconds or timestamp HH:MM:SS or off}</p>
-        <p><span class="method">GET</span> /preset/{JSON preset}</p>
-        <p><span class="method">GET</span> /preset/{predefined preset name}</p>
-      </div>
-
-      <div class="docs">
-        <h2>Zone Control</h2>
-        <p><span class="method">GET</span> /{zone name}/{action}[/{parameter}]</p>
-
-        <h3>Actions</h3>
-
-        <h4>Playback</h4>
-        <ul>
-          <li>play</li>
-          <li>pause</li>
-          <li>playpause <span class="explanation">toggles playing state</span></li>
-          <li>trackseek/{seconds into song, i.e. 60 for 1:00, 120 for 2:00 etc.}</li>
-          <li>next</li>
-          <li>previous</li>
-        </ul>
-
-        <h4>Volume</h4>
-        <ul>
-          <li>volume/{absolute volume}</li>
-          <li>volume/{+ or -}{relative volume}</li>
-          <li>groupVolume/{absolute volume}</li>
-          <li>groupVolume/{+ or -}{relative volume}</li>
-          <li>mute</li>
-          <li>unmute</li>
-          <li>groupMute</li>
-          <li>groupUnmute</li>
-          <li>togglemute</li>
-          <li>lockvolumes</li>
-          <li>unlockvolumes <span class="explanation"><span class="experimental">experimental</span> enforce the volume that was selected when locking!</span></li>
-        </ul>
-
-        <h4>Playback Settings</h4>
-        <ul>
-          <li>favorite</li>
-          <li>playlist</li>
-          <li>repeat/{on | off}</li>
-          <li>shuffle/{on | off}</li>
-          <li>crossfade/{on | off}</li>
-        </ul>
-
-        <h4>Queue</h4>
-        <ul>
-          <li>queue</li>
-          <li>clearqueue</li>
-          <li>seek/{queue index}</li>
-        </ul>
-
-        <h4>Room Grouping</h4>
-        <ul>
-          <li>add/{player name from existing zone, prefix with player you want to join}</li>
-          <li>join/{player player to join in, prefix with player from current zone} (this is just the inverse of add)</li>
-          <li>isolate</li>
-          <li>ungroup (alias of isolate)</li>
-          <li>leave (alias of isolate)</li>
-        </ul>
-
-        <h4>Other</h4>
-        <ul>
-          <li>say</li>
-        </ul>
-
-        <h4>Internals</h4>
-        <ul>
-          <li>state <span class="explanation">returns a json-representation of the current state of player</span></li>
-        </ul>
-      </div>
-
-      <div class="footer">
-        <p><a href="/docs">Full documentation</a></p>
-        <p>Learn more at <a href="https://github.com/jishi/node-sonos-http-api">https://github.com/jishi/node-sonos-http-api</a></p>
-      </div>
+      <nav role="navigation" aria-label="Main navigation">
+        <a href="/docs" class="btn btn-primary">API Documentation</a>
+      </nav>
     </div>
+  </header>
 
-  </body>
+  <main class="page-main" role="main">
+    <div class="container stack-lg">
+      <section id="zones" aria-label="Discovered Zones">
+        <h2>Zones</h2>
+        <noscript>
+          <p>JavaScript is disabled. View zone data directly at <a href="/zones">/zones</a>.</p>
+        </noscript>
+      </section>
+
+      <section id="api-reference" aria-label="API Quick Reference">
+        <h2>API Quick Reference</h2>
+        <div class="grid">
+          <div class="card stack-sm">
+            <h3>Info</h3>
+            <ul class="stack-sm">
+              <li><code><a href="/zones">/zones</a></code></li>
+              <li><code>/{room}/state</code></li>
+              <li><code><a href="/favorites">/favorites</a></code></li>
+              <li><code><a href="/playlists">/playlists</a></code></li>
+              <li><code>/{room}/queue</code></li>
+            </ul>
+          </div>
+
+          <div class="card stack-sm">
+            <h3>Global Control</h3>
+            <ul class="stack-sm">
+              <li><code>/lockvolumes</code></li>
+              <li><code>/unlockvolumes</code></li>
+              <li><code>/pauseall</code></li>
+              <li><code>/resumeall</code></li>
+              <li><code>/reindex</code></li>
+              <li><code>/sleep/{timeout}</code></li>
+            </ul>
+          </div>
+
+          <div class="card stack-sm">
+            <h3>Zone Control</h3>
+            <ul class="stack-sm">
+              <li><code>/{room}/play</code></li>
+              <li><code>/{room}/pause</code></li>
+              <li><code>/{room}/volume/{level}</code></li>
+              <li><code>/{room}/next</code></li>
+              <li><code>/{room}/previous</code></li>
+              <li><code>/{room}/mute</code></li>
+              <li><code>/{room}/unmute</code></li>
+              <li><code>/{room}/seek/{seconds}</code></li>
+              <li><code>/{room}/favorite/{name}</code></li>
+              <li><code>/{room}/playlist/{name}</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="page-footer" role="contentinfo">
+    <div class="container cluster">
+      <p>Learn more at <a href="https://github.com/TMA84/node-sonos-http-api">GitHub</a></p>
+      <a href="/docs">API Documentation</a>
+    </div>
+  </footer>
+
+  <script type="module" src="/js/zones.js"></script>
+</body>
 </html>

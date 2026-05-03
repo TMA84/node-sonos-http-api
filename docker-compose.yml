@@ -1,0 +1,11 @@
+services:
+  sonos-api:
+    build: .
+    image: sonos-http-api:2.0.0
+    network_mode: host
+    volumes:
+      - ./settings.json:/app/settings.json:ro
+      - ./presets:/app/presets:ro
+      - ./clips:/app/static/clips
+      - ./cache:/app/cache
+    restart: unless-stopped

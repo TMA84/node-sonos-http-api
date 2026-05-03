@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+.git
+.gitignore
+.github
+.kiro
+.vscode
+*.md
+!README.md
+.env
+.env.*
+test/
+tsconfig.json
+eslint.config.js
+vitest.config.*

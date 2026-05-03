@@ -1,8 +1,14 @@
-'use strict';
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path, { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createRequire } from 'node:module';
+import tryLoadJson from './lib/helpers/try-load-json.js';
+
+const require = createRequire(import.meta.url);
 const logger = require('sonos-discovery/lib/helpers/logger');
-const tryLoadJson = require('./lib/helpers/try-load-json');
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 function merge(target, source) {
   Object.keys(source).forEach((key) => {
@@ -43,4 +49,4 @@ if (!fs.existsSync(settings.cacheDir)) {
   }
 }
 
-module.exports = settings;
+export default settings;

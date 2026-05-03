@@ -1,0 +1,9 @@
+configuration:
+  port:
+    name: Port
+    description: The port the Sonos HTTP API listens on
+  announce_volume:
+    name: Announce Volume
+    description: Default volume level for TTS announcements (1-100)
+network:
+  5005/tcp: Sonos HTTP API (Web UI and REST API)

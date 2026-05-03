@@ -1,0 +1,805 @@
+openapi: "3.0.3"
+info:
+  title: Sonos HTTP API
+  description: >
+    A RESTful API for controlling Sonos speakers over your local network.
+    All endpoints use HTTP GET for simplicity and can be triggered from any
+    HTTP client, browser, or home automation system.
+  version: "1.0.0"
+  license:
+    name: MIT
+    url: https://github.com/TMA84/node-sonos-http-api/blob/master/LICENSE.md
+
+servers:
+  - url: /
+    description: Local Sonos HTTP API server
+
+tags:
+  - name: info
+    description: Retrieve system information, zone state, and library data
+  - name: global
+    description: Actions that affect all zones or the entire system
+  - name: playback
+    description: Play, pause, and track navigation
+  - name: volume
+    description: Volume and mute controls
+  - name: queue
+    description: Queue inspection and management
+  - name: grouping
+    description: Group and ungroup speakers across zones
+
+paths:
+  /zones:
+    get:
+      tags:
+        - info
+      summary: Get all zones
+      description: Returns an array of all discovered Sonos zones with their coordinators and members.
+      operationId: getZones
+      responses:
+        "200":
+          description: An array of zone objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Zone"
+
+  /favorites:
+    get:
+      tags:
+        - info
+      summary: Get Sonos favorites
+      description: Returns a list of saved Sonos favorites. Returns titles only by default.
+      operationId: getFavorites
+      responses:
+        "200":
+          description: An array of favorite names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - "Discover Weekly"
+                  - "Chill Vibes"
+                  - "Morning Jazz"
+
+  /playlists:
+    get:
+      tags:
+        - info
+      summary: Get Sonos playlists
+      description: Returns a list of saved Sonos playlists. Returns titles only by default.
+      operationId: getPlaylists
+      responses:
+        "200":
+          description: An array of playlist names
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example:
+                  - "Party Mix"
+                  - "Relaxation"
+                  - "Workout"
+
+  /lockvolumes:
+    get:
+      tags:
+        - global
+      summary: Lock all volumes
+      description: >
+        Locks the volume of all players at their current level.
+        Any volume change will be immediately reverted until volumes are unlocked.
+      operationId: lockVolumes
+      responses:
+        "200":
+          description: Volumes locked successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /unlockvolumes:
+    get:
+      tags:
+        - global
+      summary: Unlock all volumes
+      description: Removes the volume lock, allowing volume changes on all players.
+      operationId: unlockVolumes
+      responses:
+        "200":
+          description: Volumes unlocked successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /pauseall:
+    get:
+      tags:
+        - global
+      summary: Pause all zones
+      description: Pauses playback on all currently playing zones immediately.
+      operationId: pauseAll
+      responses:
+        "200":
+          description: All zones paused
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /resumeall:
+    get:
+      tags:
+        - global
+      summary: Resume all zones
+      description: Resumes playback on all zones that were previously paused by pauseall.
+      operationId: resumeAll
+      responses:
+        "200":
+          description: All zones resumed
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /reindex:
+    get:
+      tags:
+        - global
+      summary: Reindex music library
+      description: Triggers a refresh of the Sonos music library share index.
+      operationId: reindex
+      responses:
+        "200":
+          description: Reindex started
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /sleep/{timeout}:
+    get:
+      tags:
+        - global
+      summary: Set sleep timer
+      description: >
+        Sets a sleep timer for the specified number of seconds.
+        Use 0 or "off" to cancel an existing timer.
+      operationId: setSleepTimer
+      parameters:
+        - name: timeout
+          in: path
+          required: true
+          description: Sleep timer duration in seconds, or 0 to cancel
+          schema:
+            type: integer
+          example: 1800
+      responses:
+        "200":
+          description: Sleep timer set
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /preset/{preset}:
+    get:
+      tags:
+        - global
+      summary: Apply a preset
+      description: >
+        Applies a named preset configuration. Presets define speaker grouping,
+        volume levels, and playback URI. If the preset is not found, returns
+        a list of available preset names.
+      operationId: applyPreset
+      parameters:
+        - name: preset
+          in: path
+          required: true
+          description: Name of the preset to apply
+          schema:
+            type: string
+          example: "movie-night"
+      responses:
+        "200":
+          description: Preset applied or list of available presets
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: string
+                  - type: array
+                    items:
+                      type: string
+
+  /{room}/state:
+    get:
+      tags:
+        - info
+      summary: Get player state
+      description: Returns the full playback state of the specified room including current track, volume, and play mode.
+      operationId: getPlayerState
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Living Room"
+      responses:
+        "200":
+          description: Current player state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlayerState"
+
+  /{room}/queue:
+    get:
+      tags:
+        - queue
+      summary: Get player queue
+      description: Returns the current playback queue for the specified room.
+      operationId: getQueue
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Living Room"
+      responses:
+        "200":
+          description: Array of tracks in the queue
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+
+  /{room}/play:
+    get:
+      tags:
+        - playback
+      summary: Play
+      description: Starts or resumes playback on the specified room's zone coordinator.
+      operationId: play
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Kitchen"
+      responses:
+        "200":
+          description: Playback started
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/pause:
+    get:
+      tags:
+        - playback
+      summary: Pause
+      description: Pauses playback on the specified room's zone coordinator.
+      operationId: pause
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Kitchen"
+      responses:
+        "200":
+          description: Playback paused
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/volume/{level}:
+    get:
+      tags:
+        - volume
+      summary: Set volume
+      description: >
+        Sets the volume for the specified room. Accepts an absolute value (0-100)
+        or a relative adjustment (e.g., +5 or -10).
+      operationId: setVolume
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Bedroom"
+        - name: level
+          in: path
+          required: true
+          description: "Volume level: absolute (0-100) or relative (+5, -10)"
+          schema:
+            type: string
+          example: "50"
+      responses:
+        "200":
+          description: Volume set
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/next:
+    get:
+      tags:
+        - playback
+      summary: Next track
+      description: Skips to the next track in the queue for the specified room.
+      operationId: next
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Office"
+      responses:
+        "200":
+          description: Skipped to next track
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/previous:
+    get:
+      tags:
+        - playback
+      summary: Previous track
+      description: Skips to the previous track in the queue for the specified room.
+      operationId: previous
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Office"
+      responses:
+        "200":
+          description: Skipped to previous track
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/mute:
+    get:
+      tags:
+        - volume
+      summary: Mute
+      description: Mutes the specified room.
+      operationId: mute
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Bathroom"
+      responses:
+        "200":
+          description: Room muted
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/unmute:
+    get:
+      tags:
+        - volume
+      summary: Unmute
+      description: Unmutes the specified room.
+      operationId: unmute
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Bathroom"
+      responses:
+        "200":
+          description: Room unmuted
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/seek/{seconds}:
+    get:
+      tags:
+        - playback
+      summary: Seek to position
+      description: Seeks to the specified position in the current track.
+      operationId: seek
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Living Room"
+        - name: seconds
+          in: path
+          required: true
+          description: Position to seek to in seconds from the start of the track
+          schema:
+            type: integer
+          example: 120
+      responses:
+        "200":
+          description: Seeked to position
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/favorite/{name}:
+    get:
+      tags:
+        - playback
+      summary: Play a favorite
+      description: >
+        Replaces the current queue with the specified Sonos favorite and starts playback.
+        The name must match a saved favorite exactly (URL-encoded if it contains spaces).
+      operationId: playFavorite
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Living Room"
+        - name: name
+          in: path
+          required: true
+          description: Name of the Sonos favorite to play
+          schema:
+            type: string
+          example: "Discover Weekly"
+      responses:
+        "200":
+          description: Favorite started playing
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/playlist/{name}:
+    get:
+      tags:
+        - playback
+      summary: Play a playlist
+      description: >
+        Replaces the current queue with the specified Sonos playlist and starts playback.
+        The name must match a saved playlist exactly (URL-encoded if it contains spaces).
+      operationId: playPlaylist
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (URL-encoded if it contains spaces)
+          schema:
+            type: string
+          example: "Kitchen"
+        - name: name
+          in: path
+          required: true
+          description: Name of the Sonos playlist to play
+          schema:
+            type: string
+          example: "Party Mix"
+      responses:
+        "200":
+          description: Playlist started playing
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/group/{otherRoom}:
+    get:
+      tags:
+        - grouping
+      summary: Group rooms
+      description: >
+        Adds another room to the specified room's group. The other room will
+        start playing the same audio as the target room.
+      operationId: groupRooms
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room to group into (the coordinator)
+          schema:
+            type: string
+          example: "Living Room"
+        - name: otherRoom
+          in: path
+          required: true
+          description: Name of the room to add to the group
+          schema:
+            type: string
+          example: "Kitchen"
+      responses:
+        "200":
+          description: Rooms grouped successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/ungroup:
+    get:
+      tags:
+        - grouping
+      summary: Ungroup a room
+      description: >
+        Removes the specified room from its current group, making it a
+        standalone zone coordinator.
+      operationId: ungroupRoom
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room to remove from its group
+          schema:
+            type: string
+          example: "Kitchen"
+      responses:
+        "200":
+          description: Room ungrouped successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+components:
+  schemas:
+    Zone:
+      type: object
+      description: A Sonos zone containing a coordinator and its grouped members
+      properties:
+        uuid:
+          type: string
+          description: Unique identifier for the zone
+          example: "RINCON_5CAAFDA47B4A01400"
+        coordinator:
+          $ref: "#/components/schemas/Player"
+        members:
+          type: array
+          description: All players in this zone (including the coordinator)
+          items:
+            $ref: "#/components/schemas/Player"
+      required:
+        - uuid
+        - coordinator
+        - members
+
+    Player:
+      type: object
+      description: A Sonos player (speaker) with its current state
+      properties:
+        uuid:
+          type: string
+          description: Unique identifier for the player
+          example: "RINCON_5CAAFDA47B4A01400"
+        state:
+          $ref: "#/components/schemas/PlayerState"
+        playMode:
+          $ref: "#/components/schemas/PlayMode"
+        roomName:
+          type: string
+          description: Human-readable name of the room
+          example: "Living Room"
+        coordinator:
+          type: string
+          description: UUID of the zone coordinator this player belongs to
+          example: "RINCON_5CAAFDA47B4A01400"
+        groupState:
+          $ref: "#/components/schemas/GroupState"
+        baseUrl:
+          type: string
+          description: Base URL for direct communication with this player
+          example: "http://192.168.1.100:1400"
+      required:
+        - uuid
+        - state
+        - playMode
+        - roomName
+        - coordinator
+        - groupState
+        - baseUrl
+
+    PlayerState:
+      type: object
+      description: Current playback state of a player
+      properties:
+        currentTrack:
+          $ref: "#/components/schemas/Track"
+        nextTrack:
+          $ref: "#/components/schemas/Track"
+        volume:
+          type: integer
+          description: Current volume level (0-100)
+          example: 45
+        mute:
+          type: boolean
+          description: Whether the player is muted
+          example: false
+        trackNo:
+          type: integer
+          description: Current track number in the queue (1-based)
+          example: 3
+        elapsedTime:
+          type: integer
+          description: Elapsed playback time in seconds
+          example: 127
+        elapsedTimeFormatted:
+          type: string
+          description: Elapsed playback time as a formatted string (HH:MM:SS)
+          example: "00:02:07"
+        zoneState:
+          type: string
+          description: Playback state of the zone (deprecated alias for playbackState)
+          enum:
+            - PLAYING
+            - PAUSED_PLAYBACK
+            - STOPPED
+          example: "PLAYING"
+        playerState:
+          type: string
+          description: Playback state of the individual player (deprecated alias for playbackState)
+          enum:
+            - PLAYING
+            - PAUSED_PLAYBACK
+            - STOPPED
+          example: "PLAYING"
+        playbackState:
+          type: string
+          description: Current playback state of the player
+          enum:
+            - PLAYING
+            - PAUSED_PLAYBACK
+            - STOPPED
+            - TRANSITIONING
+          example: "PLAYING"
+      required:
+        - currentTrack
+        - nextTrack
+        - volume
+        - mute
+        - trackNo
+        - elapsedTime
+        - elapsedTimeFormatted
+        - playbackState
+
+    Track:
+      type: object
+      description: Information about a music track
+      properties:
+        artist:
+          type: string
+          description: Name of the artist
+          example: "Daft Punk"
+        title:
+          type: string
+          description: Title of the track
+          example: "Get Lucky"
+        album:
+          type: string
+          description: Name of the album
+          example: "Random Access Memories"
+        albumArtURI:
+          type: string
+          description: URI to the album artwork image
+          example: "/getaa?s=1&u=x-sonos-spotify:spotify:track:2Foc5Q5nqNiosCNqttzHof"
+        duration:
+          type: integer
+          description: Track duration in seconds
+          example: 369
+        uri:
+          type: string
+          description: URI used by Sonos to identify the track
+          example: "x-sonos-spotify:spotify:track:2Foc5Q5nqNiosCNqttzHof"
+      required:
+        - artist
+        - title
+        - album
+        - albumArtURI
+        - duration
+        - uri
+
+    PlayMode:
+      type: object
+      description: Current play mode settings
+      properties:
+        shuffle:
+          type: boolean
+          description: Whether shuffle is enabled
+          example: false
+        repeat:
+          type: string
+          description: Repeat mode setting
+          enum:
+            - all
+            - one
+            - none
+          example: "none"
+        crossfade:
+          type: boolean
+          description: Whether crossfade is enabled
+          example: false
+      required:
+        - shuffle
+        - repeat
+        - crossfade
+
+    GroupState:
+      type: object
+      description: Volume and mute state for the entire group
+      properties:
+        volume:
+          type: integer
+          description: Group volume level (0-100)
+          example: 40
+        mute:
+          type: boolean
+          description: Whether the group is muted
+          example: false
+      required:
+        - volume
+        - mute

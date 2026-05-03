@@ -1,0 +1,18 @@
+{
+  "name": "sonos-discovery",
+  "version": "1.8.0",
+  "description": "A simple node library for managing your Sonos system",
+  "author": "Jimmy Shimizu <jimmy@shimizu.se>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jishi/node-sonos-discovery.git"
+  },
+  "dependencies": {
+    "html-entities": "1.0.x",
+    "xml-flow": "1.0.2"
+  },
+  "engines": {
+    "node": ">=4 <23"
+  },
+  "main": "lib/SonosSystem.js"
+}
