@@ -1,6 +1,6 @@
 name: "Sonos HTTP API"
 description: "Control your Sonos system via a simple HTTP API with modern web UI and interactive API docs"
-version: "2.0.1"
+version: "2.0.2"
 slug: "sonos_http_api"
 image: "ghcr.io/tma84/sonos-http-api"
 arch:

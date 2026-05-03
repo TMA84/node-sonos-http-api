@@ -1,7 +1,7 @@
 // static/js/zones.js — Zone data fetcher and renderer (ES module)
 'use strict';
 
-const ZONES_ENDPOINT = '/zones';
+const ZONES_ENDPOINT = 'zones';
 const FETCH_TIMEOUT_MS = 5000;
 
 /**
