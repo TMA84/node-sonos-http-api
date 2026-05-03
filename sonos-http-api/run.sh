@@ -1,7 +1,7 @@
 #!/usr/bin/with-contenv bashio
 
-# Read options from Home Assistant add-on config
-PORT=$(bashio::config 'port')
+# Port is fixed at 5005 (matches ingress_port in config.yaml)
+PORT=5005
 ANNOUNCE_VOLUME=$(bashio::config 'announce_volume')
 
 CONFIG_DIR="/config"
@@ -36,5 +36,5 @@ if [ -d "${CONFIG_DIR}/clips" ]; then
   ln -s "${CONFIG_DIR}/clips" /app/static/clips
 fi
 
-bashio::log.info "Starting Sonos HTTP API on port ${PORT}"
+bashio::log.info "Starting Sonos HTTP API on port 5005"
 exec node /app/server.js
