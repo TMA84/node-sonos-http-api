@@ -607,6 +607,175 @@ paths:
                 type: string
                 example: "success"
 
+  /{room}/say/{text}:
+    get:
+      tags:
+        - playback
+      summary: Text-to-Speech
+      description: >
+        Announces the given text on the specified room using the configured
+        TTS provider. Optionally specify language and announce volume.
+      operationId: say
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room to announce on
+          schema:
+            type: string
+          example: "Living Room"
+        - name: text
+          in: path
+          required: true
+          description: Text to speak
+          schema:
+            type: string
+          example: "Dinner is ready"
+        - name: language
+          in: query
+          required: false
+          description: Language code for TTS (e.g. en, de, fr)
+          schema:
+            type: string
+          example: "en"
+        - name: volume
+          in: query
+          required: false
+          description: Announce volume (1-100), reverts after announcement
+          schema:
+            type: integer
+          example: 50
+      responses:
+        "200":
+          description: Announcement played successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/say/{text}/{language}:
+    get:
+      tags:
+        - playback
+      summary: Text-to-Speech with language
+      description: >
+        Announces the given text on the specified room in the specified language.
+      operationId: sayWithLanguage
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room to announce on
+          schema:
+            type: string
+          example: "Living Room"
+        - name: text
+          in: path
+          required: true
+          description: Text to speak
+          schema:
+            type: string
+          example: "Das Essen ist fertig"
+        - name: language
+          in: path
+          required: true
+          description: Language code for TTS
+          schema:
+            type: string
+          example: "de"
+      responses:
+        "200":
+          description: Announcement played successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /sayall/{text}:
+    get:
+      tags:
+        - global
+      summary: Text-to-Speech on all rooms
+      description: >
+        Announces the given text on all discovered rooms simultaneously.
+      operationId: sayAll
+      parameters:
+        - name: text
+          in: path
+          required: true
+          description: Text to speak on all rooms
+          schema:
+            type: string
+          example: "Good morning everyone"
+      responses:
+        "200":
+          description: Announcement played on all rooms
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/clip/{uri}:
+    get:
+      tags:
+        - playback
+      summary: Play audio clip
+      description: >
+        Plays an audio clip on the specified room. The clip URI can be a
+        local file (from /clips/) or an HTTP URL. Playback resumes after the clip.
+      operationId: clip
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room to play the clip on
+          schema:
+            type: string
+          example: "Living Room"
+        - name: uri
+          in: path
+          required: true
+          description: URI of the audio clip (filename from /clips/ or full HTTP URL)
+          schema:
+            type: string
+          example: "doorbell.mp3"
+      responses:
+        "200":
+          description: Clip played successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /clipall/{uri}:
+    get:
+      tags:
+        - global
+      summary: Play audio clip on all rooms
+      description: >
+        Plays an audio clip on all discovered rooms simultaneously.
+      operationId: clipAll
+      parameters:
+        - name: uri
+          in: path
+          required: true
+          description: URI of the audio clip
+          schema:
+            type: string
+          example: "doorbell.mp3"
+      responses:
+        "200":
+          description: Clip played on all rooms
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
 components:
   schemas:
     Zone:
