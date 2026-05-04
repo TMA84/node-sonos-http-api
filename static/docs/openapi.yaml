@@ -776,6 +776,393 @@ paths:
                 type: string
                 example: "success"
 
+  /{room}/tunein/{station}:
+    get:
+      tags:
+        - playback
+      summary: Play TuneIn radio station
+      description: Plays a TuneIn radio station by name or station ID.
+      operationId: tunein
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: station
+          in: path
+          required: true
+          description: TuneIn station name or ID (e.g. s]25111)
+          schema:
+            type: string
+          example: "BBC Radio 1"
+      responses:
+        "200":
+          description: Station playing
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/spotify/{uri}:
+    get:
+      tags:
+        - playback
+      summary: Play Spotify content
+      description: Plays a Spotify URI (track, album, playlist, or artist).
+      operationId: spotify
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: uri
+          in: path
+          required: true
+          description: Spotify URI (e.g. spotify:track:xxx or spotify:playlist:xxx)
+          schema:
+            type: string
+          example: "spotify:playlist:37i9dQZF1DXcBWIGoYBM5M"
+      responses:
+        "200":
+          description: Spotify content playing
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/applemusic/{query}:
+    get:
+      tags:
+        - playback
+      summary: Play Apple Music content
+      description: Searches and plays Apple Music content by query.
+      operationId: appleMusic
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: query
+          in: path
+          required: true
+          description: Search query for Apple Music
+          schema:
+            type: string
+          example: "Taylor Swift"
+      responses:
+        "200":
+          description: Apple Music content playing
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/amazonmusic/{query}:
+    get:
+      tags:
+        - playback
+      summary: Play Amazon Music content
+      description: Searches and plays Amazon Music content by query.
+      operationId: amazonMusic
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: query
+          in: path
+          required: true
+          description: Search query for Amazon Music
+          schema:
+            type: string
+          example: "Chill Vibes"
+      responses:
+        "200":
+          description: Amazon Music content playing
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/bbcsounds/{query}:
+    get:
+      tags:
+        - playback
+      summary: Play BBC Sounds content
+      description: Plays a BBC Sounds station or podcast.
+      operationId: bbcSounds
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: query
+          in: path
+          required: true
+          description: BBC Sounds station or podcast name
+          schema:
+            type: string
+          example: "BBC Radio 4"
+      responses:
+        "200":
+          description: BBC Sounds content playing
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/linein:
+    get:
+      tags:
+        - playback
+      summary: Switch to line-in input
+      description: Switches the specified room to its line-in audio input.
+      operationId: linein
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room with line-in
+          schema:
+            type: string
+          example: "Living Room"
+      responses:
+        "200":
+          description: Switched to line-in
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/equalizer/{setting}/{value}:
+    get:
+      tags:
+        - volume
+      summary: Set equalizer
+      description: Adjusts bass, treble, or loudness for the specified room.
+      operationId: equalizer
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: setting
+          in: path
+          required: true
+          description: Equalizer setting to adjust
+          schema:
+            type: string
+            enum: [bass, treble, loudness]
+          example: "bass"
+        - name: value
+          in: path
+          required: true
+          description: Value to set (-10 to 10 for bass/treble, on/off for loudness)
+          schema:
+            type: string
+          example: "5"
+      responses:
+        "200":
+          description: Equalizer adjusted
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/nightmode/{state}:
+    get:
+      tags:
+        - volume
+      summary: Set night mode
+      description: Enables or disables night mode (reduces loud sounds) on a Sonos soundbar.
+      operationId: nightMode
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room (must be a soundbar)
+          schema:
+            type: string
+          example: "Living Room"
+        - name: state
+          in: path
+          required: true
+          description: Night mode state
+          schema:
+            type: string
+            enum: ["on", "off"]
+          example: "on"
+      responses:
+        "200":
+          description: Night mode updated
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/repeat/{mode}:
+    get:
+      tags:
+        - playback
+      summary: Set repeat mode
+      description: Sets the repeat mode for the specified room.
+      operationId: repeat
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: mode
+          in: path
+          required: true
+          description: Repeat mode
+          schema:
+            type: string
+            enum: ["all", "one", "none"]
+          example: "all"
+      responses:
+        "200":
+          description: Repeat mode set
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/shuffle/{state}:
+    get:
+      tags:
+        - playback
+      summary: Set shuffle mode
+      description: Enables or disables shuffle for the specified room.
+      operationId: shuffle
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: state
+          in: path
+          required: true
+          description: Shuffle state
+          schema:
+            type: string
+            enum: ["on", "off"]
+          example: "on"
+      responses:
+        "200":
+          description: Shuffle mode set
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/crossfade/{state}:
+    get:
+      tags:
+        - playback
+      summary: Set crossfade mode
+      description: Enables or disables crossfade for the specified room.
+      operationId: crossfade
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+        - name: state
+          in: path
+          required: true
+          description: Crossfade state
+          schema:
+            type: string
+            enum: ["on", "off"]
+          example: "on"
+      responses:
+        "200":
+          description: Crossfade mode set
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /{room}/clearqueue:
+    get:
+      tags:
+        - queue
+      summary: Clear the queue
+      description: Removes all tracks from the queue of the specified room.
+      operationId: clearQueue
+      parameters:
+        - name: room
+          in: path
+          required: true
+          description: Name of the room
+          schema:
+            type: string
+          example: "Living Room"
+      responses:
+        "200":
+          description: Queue cleared
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "success"
+
+  /services:
+    get:
+      tags:
+        - info
+      summary: List available music services
+      description: Returns a list of music services available on the Sonos system.
+      operationId: services
+      responses:
+        "200":
+          description: List of music services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
 components:
   schemas:
     Zone:

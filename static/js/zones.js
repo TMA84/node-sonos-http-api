@@ -69,11 +69,25 @@ function stateLabel(zoneState) {
 }
 
 /**
- * Renders a single player row (compact).
+ * Sends a command to a room via the API.
+ * @param {string} roomName - Name of the room
+ * @param {string} action - Action to perform (play, pause, next, previous)
+ */
+function sendCommand(roomName, action) {
+  const basePath = window.location.pathname.replace(/\/+$/, '');
+  const url = basePath + '/' + encodeURIComponent(roomName) + '/' + action;
+  fetch(url).catch(() => {});
+  // Refresh after a short delay to show updated state
+  setTimeout(loadZones, 800);
+}
+
+/**
+ * Renders a single player row (compact) with playback controls.
  * @param {object} player - Player object from zone data
+ * @param {boolean} isCoordinator - Whether this player is the zone coordinator
  * @returns {HTMLElement}
  */
-function renderPlayer(player) {
+function renderPlayer(player, isCoordinator) {
   const el = document.createElement('div');
   el.className = 'player-row';
   el.setAttribute('data-player-uuid', player.uuid);
@@ -81,7 +95,7 @@ function renderPlayer(player) {
   const state = player.state || {};
   const playbackState = state.playbackState || 'STOPPED';
 
-  // Room name + badge inline
+  // Room name + badge + controls inline
   const header = document.createElement('div');
   header.className = 'player-header';
 
@@ -94,6 +108,37 @@ function renderPlayer(player) {
   badge.className = stateBadgeClass(playbackState);
   badge.textContent = stateLabel(playbackState);
   header.appendChild(badge);
+
+  // Playback controls (only for coordinator)
+  if (isCoordinator) {
+    const controls = document.createElement('span');
+    controls.className = 'player-controls';
+
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'btn-icon';
+    prevBtn.textContent = '⏮';
+    prevBtn.title = 'Previous';
+    prevBtn.addEventListener('click', () => sendCommand(player.roomName, 'previous'));
+    controls.appendChild(prevBtn);
+
+    const playPauseBtn = document.createElement('button');
+    playPauseBtn.className = 'btn-icon';
+    playPauseBtn.textContent = playbackState === 'PLAYING' ? '⏸' : '▶';
+    playPauseBtn.title = playbackState === 'PLAYING' ? 'Pause' : 'Play';
+    playPauseBtn.addEventListener('click', () => {
+      sendCommand(player.roomName, playbackState === 'PLAYING' ? 'pause' : 'play');
+    });
+    controls.appendChild(playPauseBtn);
+
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'btn-icon';
+    nextBtn.textContent = '⏭';
+    nextBtn.title = 'Next';
+    nextBtn.addEventListener('click', () => sendCommand(player.roomName, 'next'));
+    controls.appendChild(nextBtn);
+
+    header.appendChild(controls);
+  }
 
   const volume = document.createElement('span');
   volume.className = 'player-volume text-secondary';
@@ -159,7 +204,7 @@ export function renderZones(zones, container) {
 
     // Zone coordinator as primary player
     if (zone.coordinator) {
-      group.appendChild(renderPlayer(zone.coordinator));
+      group.appendChild(renderPlayer(zone.coordinator, true));
     }
 
     // Zone members (excluding coordinator) — compact list
@@ -171,7 +216,7 @@ export function renderZones(zones, container) {
       const separator = document.createElement('hr');
       separator.className = 'zone-divider';
       group.appendChild(separator);
-      group.appendChild(renderPlayer(member));
+      group.appendChild(renderPlayer(member, false));
     }
 
     grid.appendChild(group);
