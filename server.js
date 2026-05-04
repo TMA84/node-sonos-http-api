@@ -19,13 +19,13 @@ await api.init();
 
 var requestHandler = function (req, res) {
   // Strip Home Assistant Ingress prefix from URL
+  // HA Ingress forwards the full path; detect and strip it
   const ingressPath = req.headers['x-ingress-path'];
   if (ingressPath && req.url.startsWith(ingressPath)) {
     req.url = req.url.slice(ingressPath.length) || '/';
-    // Redirect to trailing slash for root so relative URLs work
-    if (req.url === '' || req.url === '/') {
-      req.url = '/';
-    }
+  } else if (req.url.match(/^\/api\/hassio_ingress\/[^/]+/)) {
+    // Fallback: strip ingress prefix from URL pattern directly
+    req.url = req.url.replace(/^\/api\/hassio_ingress\/[^/]+/, '') || '/';
   }
 
   // Health check endpoint for HA watchdog

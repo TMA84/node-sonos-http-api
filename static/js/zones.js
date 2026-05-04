@@ -5,16 +5,6 @@ const FETCH_TIMEOUT_MS = 5000;
 const AUTO_REFRESH_MS = 10000; // Refresh zones every 10 seconds
 
 /**
- * Get the base URL for API calls, accounting for HA Ingress.
- * Ensures the path always ends with / for correct relative resolution.
- */
-function getBaseUrl() {
-  const path = window.location.pathname;
-  // Ensure trailing slash so relative URLs resolve correctly
-  return path.endsWith('/') ? path : path + '/';
-}
-
-/**
  * Fetches zone data from the /zones endpoint.
  * Uses AbortController with a 5-second timeout.
  * @returns {Promise<Array>} Array of zone objects
@@ -25,7 +15,9 @@ export async function fetchZones() {
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const url = getBaseUrl() + 'zones';
+    // Use path relative to current location for Ingress compatibility
+    const basePath = window.location.pathname.replace(/\/+$/, '');
+    const url = basePath + '/zones';
     const response = await fetch(url, { signal: controller.signal });
 
     if (!response.ok) {
