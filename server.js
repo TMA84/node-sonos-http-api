@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 const SonosSystem = require('sonos-discovery');
 const logger = require('sonos-discovery/lib/helpers/logger');
 
-const serve = serveStatic(settings.webroot);
+const serve = serveStatic(settings.webroot, { index: ['index.html'], redirect: true });
 const discovery = new SonosSystem(settings);
 const api = new HttpAPI(discovery, settings);
 
@@ -22,6 +22,13 @@ var requestHandler = function (req, res) {
   const ingressPath = req.headers['x-ingress-path'];
   if (ingressPath && req.url.startsWith(ingressPath)) {
     req.url = req.url.slice(ingressPath.length) || '/';
+  }
+
+  // Health check endpoint for HA watchdog
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok' }));
+    return;
   }
 
   req.addListener('end', function () {

@@ -3,6 +3,7 @@
 
 const ZONES_ENDPOINT = './zones';
 const FETCH_TIMEOUT_MS = 5000;
+const AUTO_REFRESH_MS = 10000; // Refresh zones every 10 seconds
 
 /**
  * Fetches zone data from the /zones endpoint.
@@ -275,7 +276,10 @@ async function loadZones() {
   }
 }
 
-// Initialize on page load
+// Initialize on page load and start auto-refresh
 if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', loadZones);
+  document.addEventListener('DOMContentLoaded', () => {
+    loadZones();
+    setInterval(loadZones, AUTO_REFRESH_MS);
+  });
 }
