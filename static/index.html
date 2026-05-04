@@ -4,17 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sonos HTTP API</title>
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
   <header class="page-header" role="banner">
     <div class="container cluster">
       <div class="cluster">
-        <img src="sonos-icon.png" alt="Sonos logo" width="64" height="64">
+        <img src="./sonos-icon.png" alt="Sonos logo" width="64" height="64">
         <h1>Sonos HTTP API</h1>
       </div>
       <nav role="navigation" aria-label="Main navigation">
-        <a href="docs" class="btn btn-primary">API Documentation</a>
+        <a href="./docs" class="btn btn-primary">API Documentation</a>
       </nav>
     </div>
   </header>
@@ -51,6 +51,8 @@
               <li><code>/resumeall</code></li>
               <li><code>/reindex</code></li>
               <li><code>/sleep/{timeout}</code></li>
+              <li><code>/sayall/{text}</code></li>
+              <li><code>/clipall/{uri}</code></li>
             </ul>
           </div>
 
@@ -79,10 +81,10 @@
   <footer class="page-footer" role="contentinfo">
     <div class="container cluster">
       <p>Learn more at <a href="https://github.com/TMA84/node-sonos-http-api">GitHub</a></p>
-      <a href="docs">API Documentation</a>
+      <a href="./docs">API Documentation</a>
     </div>
   </footer>
 
-  <script type="module" src="js/zones.js"></script>
+  <script type="module" src="./js/zones.js"></script>
 </body>
 </html>
