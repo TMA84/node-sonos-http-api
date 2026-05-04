@@ -1,92 +1,190 @@
 # Sonos HTTP API
 
-A Node.js HTTP API for controlling your Sonos system with simple REST requests.
+Control your Sonos system via a simple HTTP API — with a modern web UI, interactive API docs, and playback controls.
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
-## Table of Contents
+<a href="https://buymeacoffee.com/tobiasmalct"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-yellow?logo=buymeacoffee&logoColor=white" alt="Buy Me a Coffee"></a>
 
-- [Installation](#installation)
-- [Docker Usage](#docker-usage)
-- [API Endpoints](#api-endpoints)
-- [Configuration](#configuration)
-- [TTS Providers](#tts-providers)
-- [Music Services](#music-services)
+## Features
 
-## Installation
+- Full playback control (play, pause, next, volume, seek, etc.)
+- Text-to-Speech announcements (Google, AWS Polly, ElevenLabs, Microsoft, macOS)
+- Music service integration (Spotify, Apple Music, Amazon Music, TuneIn, BBC Sounds)
+- Zone grouping and ungrouping
+- Favorites, playlists, and presets
+- Modern web UI with live zone status and playback controls
+- Interactive API documentation (Swagger UI)
+- Auto-refresh zone status every 10 seconds
+- Dark mode (follows system preference)
+- Responsive design, WCAG 2.1 AA accessible
+- Home Assistant Add-on with Ingress support
+- Docker container (amd64 + aarch64)
 
-**Requirements:** Node.js 18 or higher
+## Quick Start
 
-```bash
-# Clone the repository
-git clone https://github.com/jishi/node-sonos-http-api.git
-cd node-sonos-http-api
+| Your setup | Recommended method |
+|---|---|
+| Home Assistant OS / Supervised | [Home Assistant Add-on](#home-assistant-add-on) |
+| Docker / NAS / Linux server | [Docker](#docker) |
+| Development / macOS / Windows | [Node.js](#nodejs) |
 
-# Install dependencies
-npm install
+---
 
-# Build TypeScript source
-npm run build
+## Home Assistant Add-on
 
-# Start the server
-node dist/server.js
-```
+The easiest way to run Sonos HTTP API on Home Assistant.
 
-The server starts on `http://0.0.0.0:5005` by default.
+### Installation
 
-## Docker Usage
+1. Go to **Settings → Add-ons → Add-on Store**
+2. Click ⋮ (top right) → **Repositories**
+3. Add: `https://github.com/TMA84/node-sonos-http-api`
+4. Find "Sonos HTTP API" in the store and click **Install**
+5. Start the add-on
 
-### Using Docker Compose (recommended)
+The web UI is accessible directly from the Home Assistant sidebar (panel icon: 🔊).
 
-```bash
-docker-compose up
-```
+### Configuration
 
-This starts the API with default settings. To customize, mount your configuration files:
+| Option | Default | Description |
+|--------|---------|-------------|
+| `announce_volume` | `40` | Default volume for TTS announcements (1-100) |
+
+For advanced settings, place a `settings.json` in the add-on config directory:
+`/addon_configs/local_sonos_http_api/settings.json`
+
+### Features
+
+- **Ingress**: Web UI accessible from the HA sidebar
+- **Host network**: Sonos SSDP discovery works automatically
+- **Watchdog**: Auto-restarts if the server becomes unresponsive
+- **Presets**: Place preset files in `/addon_configs/local_sonos_http_api/presets/`
+- **Clips**: Place audio clips in `/addon_configs/local_sonos_http_api/clips/`
+
+---
+
+## Docker
+
+### Docker Compose (recommended)
 
 ```yaml
-# docker-compose.yml
-version: '3.8'
 services:
   sonos-api:
-    build: .
-    ports:
-      - "5005:5005"
+    image: ghcr.io/tma84/sonos-http-api:latest
+    network_mode: host
     volumes:
       - ./settings.json:/app/settings.json:ro
       - ./presets:/app/presets:ro
+      - ./clips:/app/static/clips
     restart: unless-stopped
 ```
 
-### Volume Mounts
+```bash
+docker compose up -d
+```
 
-| Mount Path | Purpose |
-|-----------|---------|
-| `/app/settings.json` | Custom configuration file |
-| `/app/presets` | Preset definition files |
+### Docker Run
 
-The Docker image uses Node.js 20 Alpine, runs as a non-root user, and supports `linux/amd64` and `linux/arm/v7` (Raspberry Pi) architectures.
+```bash
+docker run -d --name sonos-api --net=host \
+  -v ./settings.json:/app/settings.json:ro \
+  ghcr.io/tma84/sonos-http-api:latest
+```
 
-## API Endpoints
+> **Note:** `--net=host` is required for Sonos SSDP multicast discovery. Your Sonos speakers must be on the same network.
 
-All endpoints follow the pattern:
+### Supported architectures
+
+- `linux/amd64` (Intel/AMD servers, NAS)
+- `linux/aarch64` (Raspberry Pi 4+, Apple Silicon)
+
+---
+
+## Node.js
+
+**Requirements:** Node.js 18+
+
+```bash
+git clone https://github.com/TMA84/node-sonos-http-api.git
+cd node-sonos-http-api
+npm install
+npm start
+```
+
+The server starts on `http://0.0.0.0:5005`.
+
+---
+
+## Usage
+
+Once running, open `http://<your-ip>:5005` in a browser to see:
+
+- **Live zone status** with play/pause/skip controls
+- **API Quick Reference** with all available endpoints
+- **API Documentation** (Swagger UI) at `/docs/`
+
+### API Pattern
 
 ```
-http://localhost:5005/{player}/{action}/{value}
+GET http://<your-ip>:5005/{room}/{action}/{value}
 ```
+
+### Examples
+
+```bash
+# Play/Pause
+curl http://localhost:5005/Living+Room/play
+curl http://localhost:5005/Living+Room/pause
+
+# Volume
+curl http://localhost:5005/Living+Room/volume/30
+curl http://localhost:5005/Living+Room/volume/+5
+
+# Text-to-Speech
+curl http://localhost:5005/Living+Room/say/Dinner+is+ready
+curl http://localhost:5005/Living+Room/say/Das+Essen+ist+fertig/de
+
+# Play favorites/playlists
+curl http://localhost:5005/Living+Room/favorite/My+Playlist
+curl http://localhost:5005/Living+Room/playlist/Chill
+
+# Spotify
+curl http://localhost:5005/Living+Room/spotify/now/spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
+
+# TuneIn Radio
+curl http://localhost:5005/Living+Room/tunein/BBC+Radio+1
+
+# Grouping
+curl http://localhost:5005/Kitchen/group/Living+Room
+curl http://localhost:5005/Kitchen/ungroup
+
+# Get zone info
+curl http://localhost:5005/zones
+```
+
+---
+
+## API Reference
 
 ### Global Actions
 
 | Endpoint | Description |
 |----------|-------------|
 | `/zones` | List all zones and players |
-| `/pauseall/{timeout}` | Pause all players (optional timeout in minutes) |
-| `/resumeall/{timeout}` | Resume previously paused players |
-| `/preset/{name}` | Apply a named preset |
-| `/reindex` | Reindex the Sonos music library |
-| `/lockvolumes` | Lock all volumes at current level |
+| `/favorites` | List Sonos favorites |
+| `/playlists` | List Sonos playlists |
+| `/services` | List available music services |
+| `/pauseall` | Pause all players |
+| `/resumeall` | Resume all players |
+| `/reindex` | Reindex music library |
+| `/lockvolumes` | Lock all volumes |
 | `/unlockvolumes` | Unlock volumes |
-| `/health` | Health check (no auth required) |
+| `/preset/{name}` | Apply a preset |
+| `/sleep/{timeout}` | Set sleep timer (seconds) |
+| `/sayall/{text}` | TTS on all rooms |
+| `/clipall/{uri}` | Play clip on all rooms |
+| `/health` | Health check |
 
 ### Player Actions
 
@@ -95,206 +193,123 @@ http://localhost:5005/{player}/{action}/{value}
 | `play` | — | `/Office/play` |
 | `pause` | — | `/Office/pause` |
 | `playpause` | — | `/Office/playpause` |
-| `volume` | Absolute or relative (+/-) | `/Office/volume/30`, `/Office/volume/+5` |
-| `groupVolume` | Absolute or relative | `/Office/groupVolume/25` |
+| `volume` | level or +/- | `/Office/volume/30` |
 | `mute` / `unmute` | — | `/Office/mute` |
 | `next` / `previous` | — | `/Office/next` |
-| `state` | — | `/Office/state` |
-| `favorite` | Favorite name | `/Office/favorite/My%20Playlist` |
-| `playlist` | Playlist name | `/Office/playlist/Chill` |
-| `say` | phrase/language/volume | `/Office/say/Hello/en-us/50` |
-| `sayall` | phrase/language/volume | `/sayall/Hello/en-us/40` |
-| `clip` | filename/volume | `/Office/clip/doorbell.mp3/60` |
-| `clipall` | filename/volume | `/clipall/doorbell.mp3` |
-| `queue` | limit/offset | `/Office/queue/10` |
-| `clearqueue` | — | `/Office/clearqueue` |
 | `seek` | seconds | `/Office/seek/120` |
-| `sleep` | seconds or "off" | `/Office/sleep/600` |
-| `repeat` | on/one/off/toggle | `/Office/repeat/on` |
-| `shuffle` | on/off/toggle | `/Office/shuffle/on` |
-| `crossfade` | on/off/toggle | `/Office/crossfade/on` |
-| `linein` | optional source room | `/Office/linein/TV%20Room` |
-| `join` | target room | `/Kitchen/join/Office` |
-| `leave` | — | `/Kitchen/leave` |
-| `sub` | on/off/gain/crossover/polarity | `/TV%20Room/sub/gain/3` |
-| `nightmode` | on/off/toggle | `/TV%20Room/nightmode/on` |
-| `speechenhancement` | on/off/toggle | `/TV%20Room/speechenhancement/on` |
-| `bass` / `treble` | -10 to 10 | `/Office/bass/5` |
+| `state` | — | `/Office/state` |
+| `queue` | — | `/Office/queue` |
+| `clearqueue` | — | `/Office/clearqueue` |
+| `favorite` | name | `/Office/favorite/My+Playlist` |
+| `playlist` | name | `/Office/playlist/Chill` |
+| `say` | text[/lang[/volume]] | `/Office/say/Hello/en/50` |
+| `clip` | uri[/volume] | `/Office/clip/doorbell.mp3/60` |
+| `repeat` | all/one/none | `/Office/repeat/all` |
+| `shuffle` | on/off | `/Office/shuffle/on` |
+| `crossfade` | on/off | `/Office/crossfade/on` |
+| `linein` | — | `/Office/linein` |
+| `spotify` | uri | `/Office/spotify/now/spotify:track:xxx` |
+| `applemusic` | query | `/Office/applemusic/song+name` |
+| `amazonmusic` | query | `/Office/amazonmusic/playlist+name` |
+| `tunein` | station | `/Office/tunein/BBC+Radio+1` |
+| `bbcsounds` | query | `/Office/bbcsounds/Radio+4` |
+| `equalizer` | setting/value | `/Office/equalizer/bass/5` |
+| `nightmode` | on/off | `/Office/nightmode/on` |
+| `group` | room | `/Kitchen/group/Office` |
+| `ungroup` | — | `/Kitchen/ungroup` |
+
+---
 
 ## Configuration
 
-Create a `settings.json` file in the project root to override defaults. The file supports JSON5 syntax (comments, trailing commas, unquoted keys).
-
-### Options Reference
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `port` | `number` | `5005` | HTTP server port |
-| `ip` | `string` | `"0.0.0.0"` | Bind address |
-| `securePort` | `number` | `5006` | HTTPS server port |
-| `cacheDir` | `string` | `"./cache"` | Cache directory path |
-| `webroot` | `string` | `"./static"` | Static files directory |
-| `presetDir` | `string` | `"./presets"` | Presets directory |
-| `announceVolume` | `number` | `40` | Default TTS announcement volume (%) |
-| `auth` | `object` | `undefined` | Basic auth: `{ username, password }` |
-| `https` | `object` | `undefined` | HTTPS config: `{ pfx, passphrase, key, cert }` |
-| `aws` | `object` | `undefined` | AWS Polly config: `{ credentials, name, region }` |
-| `webhook` | `string` | `undefined` | Webhook URL for state change notifications |
-| `log` | `object` | `undefined` | Logging config: `{ level, format }` |
-
-### Example settings.json
+Create `settings.json` in the project root (or mount it in Docker):
 
 ```json5
 {
   port: 5005,
-  ip: "0.0.0.0",
-  announceVolume: 35,
+  announceVolume: 40,
 
-  // Basic authentication
+  // Optional: Basic authentication
   auth: {
     username: "admin",
     password: "secret"
   },
 
-  // HTTPS configuration
+  // Optional: HTTPS
   https: {
     key: "/path/to/key.pem",
     cert: "/path/to/cert.pem"
-  },
-
-  // Logging
-  log: {
-    level: "info",   // error, warn, info, debug
-    format: "text"   // text or json
   }
 }
 ```
+
+### All Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `port` | `5005` | HTTP port |
+| `ip` | `"0.0.0.0"` | Bind address |
+| `securePort` | `5006` | HTTPS port |
+| `announceVolume` | `40` | Default TTS volume (%) |
+| `auth` | — | Basic auth `{ username, password }` |
+| `https` | — | HTTPS `{ key, cert }` or `{ pfx, passphrase }` |
+| `cacheDir` | `"./cache"` | TTS cache directory |
+| `presetDir` | `"./presets"` | Presets directory |
+
+---
 
 ## TTS Providers
 
-Text-to-speech is available via the `/say` and `/sayall` actions. Configure your preferred provider in `settings.json`. If multiple providers are configured, behavior is non-deterministic.
+Configure in `settings.json`. Default is Google (no API key needed).
 
-### Google (default)
+| Provider | Config key | Notes |
+|----------|-----------|-------|
+| Google | *(default)* | No config needed |
+| AWS Polly | `aws` | Requires IAM credentials |
+| ElevenLabs | `elevenlabs` | Requires API key |
+| Microsoft | `microsoft` | Requires Bing Speech key |
+| VoiceRSS | `voicerss` | API key as string |
+| macOS Say | `macSay` | Local only, no network |
 
-No configuration required. Works out of the box with no API key.
-
-```
-/Office/say/Hello world/en-us/50
-```
-
-### AWS Polly
-
+Example (AWS Polly):
 ```json5
 {
   aws: {
-    credentials: {
-      region: "us-east-1",
-      accessKeyId: "YOUR_KEY",
-      secretAccessKey: "YOUR_SECRET"
-    },
-    name: "Joanna"
+    credentials: { region: "eu-west-1", accessKeyId: "...", secretAccessKey: "..." },
+    name: "Vicki"
   }
 }
 ```
 
-Append `Neural` to the voice name for neural engine (e.g., `JoannaNeural`).
-
-### Microsoft Cognitive Services
-
-```json5
-{
-  microsoft: {
-    key: "YOUR_BING_SPEECH_API_KEY",
-    name: "ZiraRUS"
-  }
-}
-```
-
-### ElevenLabs
-
-```json5
-{
-  elevenlabs: {
-    auth: { apiKey: "YOUR_API_KEY" },
-    config: {
-      voiceId: "VOICE_ID",
-      modelId: "eleven_multilingual_v2"
-    }
-  }
-}
-```
-
-### VoiceRSS
-
-```json5
-{
-  voicerss: "YOUR_API_KEY"
-}
-```
-
-### macOS Say
-
-```json5
-{
-  macSay: {
-    voice: "Alex",
-    rate: 90
-  }
-}
-```
-
-## Music Services
-
-### Spotify
-
-Requires a [Spotify Developer Application](https://developer.spotify.com/my-applications/) for `clientId` and `clientSecret` in settings.
-
-```
-/Office/spotify/now/spotify:track:4LI1ykYGFCcXPWkrpcU7hn
-/Office/spotify/next/spotify:track:4LI1ykYGFCcXPWkrpcU7hn
-/Office/spotify/queue/spotify:track:4LI1ykYGFCcXPWkrpcU7hn
-```
-
-For playlists: `spotify:user:spotify:playlist:{playlistId}`
-
-### Apple Music
-
-```
-/Office/applemusic/now/song:{songID}
-/Office/applemusic/now/album:{albumID}
-/Office/applemusic/now/playlist:{playlistID}
-```
-
-### Deezer
-
-Supported via the Sonos music services integration.
-
-### Library (Local Music)
-
-Search and play from your local Sonos music library:
-
-```
-/Office/musicsearch/library/song/{query}
-/Office/musicsearch/library/album/{query}
-```
+---
 
 ## Presets
 
-Create JSON5 files in the `presets/` directory. The filename (without extension) becomes the preset name.
+Create JSON5 files in `presets/`:
 
 ```json5
+// presets/morning.json
 {
   players: [
-    { roomName: "Living Room", volume: 20 },
-    { roomName: "Kitchen", volume: 15 }
+    { roomName: "Kitchen", volume: 20 },
+    { roomName: "Bathroom", volume: 15 }
   ],
-  playMode: { shuffle: true, repeat: "all" },
-  favorite: "My Playlist",
+  favorite: "Morning Jazz",
   pauseOthers: true
 }
 ```
 
-Apply with: `http://localhost:5005/preset/{name}`
+Apply: `GET /preset/morning`
+
+---
+
+## ☕ Support
+
+If this project helps you, consider supporting development:
+
+<a href="https://buymeacoffee.com/tobiasmalct"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="200"></a>
+
+---
 
 ## License
 
