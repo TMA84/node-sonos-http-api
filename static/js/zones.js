@@ -1,9 +1,18 @@
 // static/js/zones.js — Zone data fetcher and renderer (ES module)
 'use strict';
 
-const ZONES_ENDPOINT = './zones';
 const FETCH_TIMEOUT_MS = 5000;
 const AUTO_REFRESH_MS = 10000; // Refresh zones every 10 seconds
+
+/**
+ * Get the base URL for API calls, accounting for HA Ingress.
+ * Ensures the path always ends with / for correct relative resolution.
+ */
+function getBaseUrl() {
+  const path = window.location.pathname;
+  // Ensure trailing slash so relative URLs resolve correctly
+  return path.endsWith('/') ? path : path + '/';
+}
 
 /**
  * Fetches zone data from the /zones endpoint.
@@ -16,7 +25,8 @@ export async function fetchZones() {
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(ZONES_ENDPOINT, { signal: controller.signal });
+    const url = getBaseUrl() + 'zones';
+    const response = await fetch(url, { signal: controller.signal });
 
     if (!response.ok) {
       throw new Error(`Failed to load zone data (HTTP ${response.status}).`);

@@ -22,6 +22,10 @@ var requestHandler = function (req, res) {
   const ingressPath = req.headers['x-ingress-path'];
   if (ingressPath && req.url.startsWith(ingressPath)) {
     req.url = req.url.slice(ingressPath.length) || '/';
+    // Redirect to trailing slash for root so relative URLs work
+    if (req.url === '' || req.url === '/') {
+      req.url = '/';
+    }
   }
 
   // Health check endpoint for HA watchdog
