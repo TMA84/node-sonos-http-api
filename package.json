@@ -24,7 +24,7 @@
     "html-entities": "^2.6.0",
     "json5": "^2.0.0",
     "mime": "^4.0.0",
-    "music-metadata": "^1.1.0",
+    "music-metadata": "^11.12.3",
     "serve-static": "^1.15.0",
     "sonos-discovery": "file:./packages/sonos-discovery",
     "wav-file-info": "0.0.8"
