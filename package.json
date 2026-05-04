@@ -1,6 +1,6 @@
 {
   "name": "sonos-http-api",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
   "description": "A simple node app for controlling a Sonos system with basic HTTP requests",
   "scripts": {
@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-polly": "^3.1041.0",
-    "anesidora": "^1.2.0",
     "basic-auth": "~1.1.0",
     "elevenlabs-node": "2.0.1",
     "fuse.js": "^6.4.1",
