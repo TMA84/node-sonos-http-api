@@ -65,6 +65,18 @@ function hasAncestorLeaf(leaves: PathEntry[], path: string[]): boolean {
   return false;
 }
 
+/** Check if a key path exists in an object (even if the value is an empty object) */
+function hasKeyInObject(obj: Record<string, unknown>, path: string[]): boolean {
+  let current: unknown = obj;
+  for (const key of path) {
+    if (!isPlainObject(current) || !(key in (current as Record<string, unknown>))) {
+      return false;
+    }
+    current = (current as Record<string, unknown>)[key];
+  }
+  return true;
+}
+
 /** Deep clone that produces plain objects (safe for merge) */
 function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -150,7 +162,8 @@ describe('Settings Merge Precedence (Property 2)', () => {
 
           for (const { path, value } of targetLeaves) {
             // Only check paths not overridden by source
-            if (!hasLeafAtPath(sourceLeaves, path) && !hasAncestorLeaf(sourceLeaves, path)) {
+            // A source key can override even without being a leaf (e.g. empty object replaces primitive)
+            if (!hasLeafAtPath(sourceLeaves, path) && !hasAncestorLeaf(sourceLeaves, path) && !hasKeyInObject(source, path)) {
               const resultValue = getAtPath(result, path);
               expect(resultValue).toStrictEqual(value);
             }
