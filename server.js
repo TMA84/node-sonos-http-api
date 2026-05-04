@@ -18,6 +18,12 @@ const api = new HttpAPI(discovery, settings);
 await api.init();
 
 var requestHandler = function (req, res) {
+  // Strip Home Assistant Ingress prefix from URL
+  const ingressPath = req.headers['x-ingress-path'];
+  if (ingressPath && req.url.startsWith(ingressPath)) {
+    req.url = req.url.slice(ingressPath.length) || '/';
+  }
+
   req.addListener('end', function () {
     serve(req, res, function (err) {
       if (res.headersSent) return;
