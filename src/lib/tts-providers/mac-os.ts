@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { createRequire } from 'node:module';
 import fileDuration from '../helpers/file-duration.js';
 import settings from '../../settings.js';
@@ -61,16 +61,16 @@ function macSay(phrase: string, voice?: string): Promise<TtsResult | undefined> 
     // System Preferences -> Accessibility -> Speech -> System Voice
     //
 
-    let execCommand = `say "${phrase}" -o ${filepath}`;
-    if (selectedVoice && selectedRate !== "default") {
-      execCommand = `say -r ${selectedRate} -v ${selectedVoice} "${phrase}" -o ${filepath}`;
-    } else if (selectedVoice) {
-      execCommand = `say -v ${selectedVoice} "${phrase}" -o ${filepath}`;
-    } else if (selectedRate !== "default") {
-      execCommand = `say -r ${selectedRate} "${phrase}" -o ${filepath}`;
+    const args: string[] = [];
+    if (selectedVoice) {
+      args.push('-v', selectedVoice);
     }
+    if (selectedRate !== "default") {
+      args.push('-r', String(selectedRate));
+    }
+    args.push(phrase, '-o', filepath);
 
-    exec(execCommand, function (error) {
+    execFile('say', args, function (error) {
       if (error !== null) {
         reject(error);
       } else {

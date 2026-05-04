@@ -96,7 +96,7 @@ function getURIandMetadata(type: string, resList: unknown): URIAndMetadata {
     Title = results.results[0].name!;
   }
 
-  const Name = Title.toLowerCase().replace(' radio', '').replace('radio ', '').replace("'", "&apos;");
+  const Name = Title.toLowerCase().replace(/ radio/g, '').replace(/radio /g, '').replace(/'/g, "&apos;");
   const MetadataID = appleDef.metastart[type] + encodeURIComponent(String(Id));
 
   const metadata = getMetadata(type, MetadataID, Name, Title);

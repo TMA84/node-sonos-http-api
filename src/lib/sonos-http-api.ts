@@ -145,7 +145,11 @@ class HttpAPI implements ActionApi {
 
   private handleAction(options: { action: string; values: string[]; player?: unknown }): Promise<unknown> {
     const player = options.player;
-    return this.actions[options.action](player as Parameters<ActionHandler>[0], options.values);
+    const action = this.actions[options.action];
+    if (typeof action !== 'function') {
+      return Promise.reject(new Error(`Invalid action: ${options.action}`));
+    }
+    return action(player as Parameters<ActionHandler>[0], options.values);
   }
 
   private invokeWebhook(type: string, data: unknown): void {

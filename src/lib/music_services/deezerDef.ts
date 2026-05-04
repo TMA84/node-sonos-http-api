@@ -75,7 +75,7 @@ function getURIandMetadata(type: string, resList: unknown): URIAndMetadata {
 
   const Id = (type === 'album') ? results.data[0].album.id : results.data[0].artist.id;
   const Title = (type === 'album') ? results.data[0].album.title : (results.data[0].artist.name + ' Radio');
-  const Name = Title.toLowerCase().replace(' radio', '').replace('radio ', '').replace("'", "&apos;");
+  const Name = Title.toLowerCase().replace(/ radio/g, '').replace(/radio /g, '').replace(/'/g, "&apos;");
   const MetadataID = deezerDef.metastart[type] + encodeURIComponent(String(Id));
 
   const metadata = getMetadata(type, MetadataID, String(Id), Title);

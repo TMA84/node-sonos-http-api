@@ -34,7 +34,7 @@ function siriusXM(player: Player, values: string[]): Promise<any> {
       .then((favorites) => {
         return favorites.reduce(function (promise: Promise<any>, item: any) {
           if (item.uri.startsWith('x-sonosapi-hls:')) {
-            const title = item.title.replace("'", '');
+            const title = item.title.replace(/'/g, '');
 
             console.log("{fullTitle:'" + title +
               "', channelNum:'" + title.substring(0, title.search(' - ')) +

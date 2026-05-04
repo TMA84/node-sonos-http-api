@@ -100,7 +100,10 @@ function NotificationListener(localEndpoint) {
       return;
     }
 
-    const matches = req.headers.sid.match(/uuid:(.+)_sub/);
+    // Extract UUID from SID header (format: uuid:RINCON_xxx_subNNN)
+    // Limit match length to prevent ReDoS on malformed input
+    const sid = req.headers.sid.slice(0, 200);
+    const matches = sid.match(/uuid:([\w-]+)_sub/);
 
     if (!matches) {
       return;

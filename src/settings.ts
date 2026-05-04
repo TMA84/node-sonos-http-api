@@ -37,6 +37,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 export function merge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
   for (const key of Object.keys(source)) {
+    // Prevent prototype pollution
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      continue;
+    }
     const sourceVal = source[key];
     if (isPlainObject(sourceVal) && isPlainObject(target[key])) {
       merge(target[key] as Record<string, unknown>, sourceVal as Record<string, unknown>);

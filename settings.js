@@ -12,6 +12,10 @@ const __dirname = dirname(__filename);
 
 function merge(target, source) {
   Object.keys(source).forEach((key) => {
+    // Prevent prototype pollution
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      return;
+    }
     if ((Object.getPrototypeOf(source[key]) === Object.prototype) && (target[key] !== undefined)) {
       merge(target[key], source[key]);
     } else {
