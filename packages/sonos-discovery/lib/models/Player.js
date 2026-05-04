@@ -1,5 +1,4 @@
 'use strict';
-const url = require('url');
 const Subscriber = require('../Subscriber');
 const soap = require('../helpers/soap');
 const streamer = require('../helpers/streamer');
@@ -197,7 +196,7 @@ function Player(data, listener, system) {
     state.volume = level;
   };
 
-  let uri = url.parse(data.location);
+  let uri = new URL(data.location);
   _this.baseUrl = `${uri.protocol}//${uri.host}`;
 
   let subscribeEndpoints = [

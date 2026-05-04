@@ -1,7 +1,6 @@
 'use strict';
 const http = require('http');
 const https = require('https');
-const url = require('url');
 
 const agent = new http.Agent({ keepAlive: false });
 
@@ -11,7 +10,7 @@ function request(options) {
   Error.captureStackTrace(stackHolder, request);
 
   return new Promise((resolve, reject) => {
-    let uri = url.parse(options.uri);
+    let uri = new URL(options.uri);
     let httpModule = http;
     let defaultPort = 80;
     if (uri.protocol === 'https:') {
@@ -22,9 +21,9 @@ function request(options) {
     let requestOptions = {
       agent,
       method: options.method || 'GET',
-      path: uri.path,
+      path: uri.pathname + uri.search,
       host: uri.hostname,
-      port: uri.port * 1 || defaultPort
+      port: uri.port ? uri.port * 1 : defaultPort
     };
 
     if (options.headers) {
