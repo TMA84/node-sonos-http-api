@@ -184,7 +184,10 @@ function Player(data, listener, system) {
   };
   let state = clone(EMPTY_STATE);
   Object.defineProperty(_this, 'state', {
-    get: () => getState(state, _this.coordinator._state, _this.hasSub ? _this.sub : null)
+    get: () => {
+      const coordinatorState = _this.coordinator ? _this.coordinator._state : state;
+      return getState(state, coordinatorState, _this.hasSub ? _this.sub : null);
+    }
   });
 
   // This is used internally only
@@ -848,10 +851,10 @@ Player.prototype.getQueue = function getQueue(limit, offset) {
 Player.prototype.toJSON = function toJSON() {
   return {
     uuid: this.uuid,
-    coordinator: this.coordinator.uuid,
+    coordinator: this.coordinator ? this.coordinator.uuid : this.uuid,
     roomName: this.roomName,
     state: this.state,
-    groupState: this.coordinator.groupState,
+    groupState: this.coordinator ? this.coordinator.groupState : { volume: 0, mute: false },
     avTransportUri: this.avTransportUri,
     avTransportUriMetadata: this.avTransportUriMetadata
   };
