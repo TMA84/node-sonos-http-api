@@ -99,7 +99,12 @@ if (settings.https) {
 server = http.createServer(requestHandler);
 
 process.on('unhandledRejection', (err) => {
-  logger.error(err);
+  logger.error('Unhandled rejection:', err);
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught exception:', err);
+  // Don't exit — keep the server running
 });
 
 let host = settings.ip;
