@@ -369,7 +369,9 @@ function Player(data, listener, system) {
         roomName: _this.roomName
       });
 
-      _this.coordinator.recalculateGroupVolume();
+      if (_this.coordinator) {
+        _this.coordinator.recalculateGroupVolume();
+      }
     }
 
     if (data.outputfixed) {
