@@ -19,6 +19,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check versions are in sync
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          LOCK=$(node -p "require('./package-lock.json').version")
+          ADDON=$(grep '^version:' sonos-http-api/config.yaml | sed 's/version: *"\(.*\)"/\1/')
+          echo "package.json=${PKG} package-lock.json=${LOCK} config.yaml=${ADDON}"
+          if [ "$PKG" != "$ADDON" ] || [ "$PKG" != "$LOCK" ]; then
+            echo "::error file=sonos-http-api/config.yaml::Version mismatch: package.json=${PKG}, package-lock.json=${LOCK}, sonos-http-api/config.yaml=${ADDON}. Bump all of them together."
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 20
