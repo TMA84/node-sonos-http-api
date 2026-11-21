@@ -15,7 +15,7 @@ Create a `settings.json` file in the project root (Node.js) or mount it into the
 | `presetDir` | string | `"./presets"` | Presets directory |
 | `auth` | object | — | Basic auth: `{ username, password }` |
 | `https` | object | — | HTTPS: `{ key, cert }` or `{ pfx, passphrase }` |
-| `webhook` | string | — | Webhook URL for state change notifications |
+| `webhook` | string \| string[] | — | Webhook URL(s) for state change notifications. Use an array to notify several receivers. |
 
 ## Example
 
@@ -56,3 +56,30 @@ Create JSON5 files in the `presets/` directory:
 ```
 
 Apply with: `GET /preset/morning`
+
+## Webhooks
+
+Every state change (`transport-state`, `topology-change`, `volume-change`, `mute-change`) is POSTed as JSON to the configured webhook URL(s):
+
+```json5
+{
+  // single receiver
+  webhook: "http://192.168.1.50:8080/",
+
+  // or several receivers
+  webhook: [
+    "http://192.168.1.50:8080/",
+    "http://192.168.1.51:8080/"
+  ]
+}
+```
+
+Optional: `webhookType` / `webhookData` rename the `type` / `data` keys of the payload, `webhookHeaderName` + `webhookHeaderContents` add a custom header (e.g. for authentication).
+
+**Docker / Home Assistant add-on:** `127.0.0.1` / `localhost` refers to the machine (or container) the API runs on, not to the machine running your receiver. Use the LAN IP (or hostname) of the receiving machine, and make sure the receiver listens on `0.0.0.0` rather than only on `127.0.0.1`.
+
+**Alternative: Server-Sent Events.** The same events are streamed at `GET /events` (`text/event-stream`). Any number of clients can subscribe there, so receivers can pull events instead of needing a webhook entry each:
+
+```bash
+curl -N http://<sonos-api-host>:5005/events
+```

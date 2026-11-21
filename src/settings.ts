@@ -23,7 +23,7 @@ export interface Settings {
   auth?: { username: string; password: string };
   https?: { pfx?: string; passphrase?: string; key?: string; cert?: string };
   aws?: { credentials?: object; name?: string; region?: string };
-  webhook?: string;
+  webhook?: string | string[];
   webhookType?: string;
   webhookData?: string;
   webhookHeaderName?: string;

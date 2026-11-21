@@ -166,7 +166,8 @@ class HttpAPI implements ActionApi {
 
     this.events.sendEvent(jsonBody);
 
-    if (!this.settings.webhook) return;
+    const webhooks = normalizeWebhooks(this.settings.webhook);
+    if (webhooks.length === 0) return;
 
     const body = Buffer.from(jsonBody, 'utf8');
 
@@ -178,17 +179,32 @@ class HttpAPI implements ActionApi {
       headers[this.settings.webhookHeaderName] = this.settings.webhookHeaderContents;
     }
 
-    request({
-      method: 'POST',
-      uri: this.settings.webhook,
-      headers,
-      body,
-    })
-      .catch((err: unknown) => {
-        logger.error('Could not reach webhook endpoint', this.settings.webhook, 'for some reason. Verify that the receiving end is up and running.');
-        logger.error(err);
-      });
+    for (const uri of webhooks) {
+      request({
+        method: 'POST',
+        uri,
+        headers,
+        body,
+      })
+        .catch((err: unknown) => {
+          logger.error('Could not reach webhook endpoint', uri, 'for some reason. Verify that the receiving end is up and running.');
+          logger.error(err);
+        });
+    }
   }
+}
+
+/**
+ * Accepts the `webhook` setting as a single URL string or an array of URL
+ * strings and returns a de-duplicated list of non-empty URLs.
+ */
+export function normalizeWebhooks(webhook: unknown): string[] {
+  const list: unknown[] = Array.isArray(webhook) ? webhook : [webhook];
+  const urls = list
+    .filter((url): url is string => typeof url === 'string')
+    .map((url) => url.trim())
+    .filter((url) => url.length > 0);
+  return Array.from(new Set(urls));
 }
 
 function sendResponse(res: ServerResponse, code: number, body: unknown): void {
