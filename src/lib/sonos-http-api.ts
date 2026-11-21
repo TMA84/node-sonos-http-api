@@ -18,7 +18,9 @@ const __dirname = dirname(__filename);
 class HttpAPI implements ActionApi {
   private port: number;
   private webroot: string;
-  private actions: Record<string, ActionHandler> = {};
+  // Null-prototype map so URL-supplied action names can never resolve to
+  // inherited Object.prototype members (e.g. /constructor).
+  private actions: Record<string, ActionHandler> = Object.create(null) as Record<string, ActionHandler>;
   private events: HttpEventServer;
   private settings: Settings;
   discovery: SonosSystem;
@@ -119,7 +121,7 @@ class HttpAPI implements ActionApi {
     }
 
     // Validate action exists before dispatching
-    if (!this.actions[opt.action]) {
+    if (!this.hasAction(opt.action)) {
       sendResponse(res, 400, { status: 'error', error: `Unknown action: "${opt.action}"` });
       return;
     }
@@ -143,8 +145,15 @@ class HttpAPI implements ActionApi {
       });
   };
 
+  private hasAction(name: string): boolean {
+    return Object.hasOwn(this.actions, name) && typeof this.actions[name] === 'function';
+  }
+
   private handleAction(options: { action: string; values: string[]; player?: unknown }): Promise<unknown> {
     const player = options.player;
+    if (!this.hasAction(options.action)) {
+      return Promise.reject(new Error(`Invalid action: ${options.action}`));
+    }
     const action = this.actions[options.action];
     if (typeof action !== 'function') {
       return Promise.reject(new Error(`Invalid action: ${options.action}`));
