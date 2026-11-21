@@ -128,7 +128,10 @@ class HttpAPI implements ActionApi {
 
     opt.player = player;
 
-    Promise.resolve(this.handleAction(opt))
+    // Run the action inside the promise chain so a synchronous throw becomes a
+    // 500 response instead of escaping and leaving the request hanging.
+    Promise.resolve()
+      .then(() => this.handleAction(opt))
       .then((response: unknown) => {
         let result = response;
         if (!result || (result as { constructor: { name: string } }).constructor.name === 'IncomingMessage') {
