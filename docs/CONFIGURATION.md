@@ -74,6 +74,8 @@ Every state change (`transport-state`, `topology-change`, `volume-change`, `mute
 }
 ```
 
+If a receiver is unreachable (e.g. a display that is switched off), only the first failed delivery is logged as an error; further failures for that URL are logged at debug level, and an info line is written once it accepts events again.
+
 Optional: `webhookType` / `webhookData` rename the `type` / `data` keys of the payload, `webhookHeaderName` + `webhookHeaderContents` add a custom header (e.g. for authentication).
 
 **Docker / Home Assistant add-on:** `127.0.0.1` / `localhost` refers to the machine (or container) the API runs on, not to the machine running your receiver. Use the LAN IP (or hostname) of the receiving machine, and make sure the receiver listens on `0.0.0.0` rather than only on `127.0.0.1`.

@@ -22,6 +22,7 @@ class HttpAPI implements ActionApi {
   // inherited Object.prototype members (e.g. /constructor).
   private actions: Record<string, ActionHandler> = Object.create(null) as Record<string, ActionHandler>;
   private events: HttpEventServer;
+  private webhookFailures = new WebhookFailureLog(logger);
   private settings: Settings;
   discovery: SonosSystem;
 
@@ -198,11 +199,46 @@ class HttpAPI implements ActionApi {
         headers,
         body,
       })
+        .then(() => {
+          this.webhookFailures.recordSuccess(uri);
+        })
         .catch((err: unknown) => {
-          logger.error('Could not reach webhook endpoint', uri, 'for some reason. Verify that the receiving end is up and running.');
-          logger.error(err);
+          this.webhookFailures.recordFailure(uri, err);
         });
     }
+  }
+}
+
+type WebhookLogger = Pick<typeof logger, 'error' | 'info' | 'debug'>;
+
+/**
+ * Logs webhook delivery problems once per endpoint instead of on every event:
+ * the first failure is logged as an error, repeated failures only at debug
+ * level, and an info line is logged once the endpoint accepts events again.
+ */
+export class WebhookFailureLog {
+  private failures = new Map<string, number>();
+
+  constructor(private log: WebhookLogger) {}
+
+  recordFailure(uri: string, err: unknown): void {
+    const count = this.failures.get(uri);
+    if (count === undefined) {
+      this.failures.set(uri, 1);
+      this.log.error('Could not reach webhook endpoint', uri, 'for some reason. Verify that the receiving end is up and running.',
+        'Further failures for this endpoint are suppressed until it is reachable again.');
+      this.log.error(err);
+      return;
+    }
+    this.failures.set(uri, count + 1);
+    this.log.debug('Webhook endpoint', uri, 'still unreachable:', (err as Error | undefined)?.message);
+  }
+
+  recordSuccess(uri: string): void {
+    const count = this.failures.get(uri);
+    if (count === undefined) return;
+    this.failures.delete(uri);
+    this.log.info('Webhook endpoint', uri, 'is reachable again after', count, count === 1 ? 'failed delivery.' : 'failed deliveries.');
   }
 }
 
